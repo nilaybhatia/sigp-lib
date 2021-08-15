@@ -2,6 +2,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <assert.h>
 #include "Signal.hpp"
 
 Signal::Signal(){
@@ -153,3 +154,41 @@ Signal Signal::linear_convolution(const Signal& other){
     return convoluted;
 }
 
+Signal Signal::circular_convolution(const Signal& other){
+    int l = this->vals.size(), m = other.vals.size();
+    int new_origin_index = 0;
+    int n = std::max(l, m);
+
+    std::vector<int> larger, smaller;
+    if(l >= m){
+        larger.assign(this->vals.begin(), this->vals.end());
+        smaller.assign(other.vals.begin(), other.vals.end());
+    }
+    else{
+        smaller.assign(this->vals.begin(), this->vals.end());
+        larger.assign(other.vals.begin(), other.vals.end());
+    }
+    // n x n matrix
+    std::vector<std::vector<int>> matrix(n, std::vector<int>(n));
+    for(int j = 0; j < n; j++){
+        for(int i = 0; i < n; i++){
+            matrix[i][j] = larger[(i - j + n) % n];
+        }
+    } 
+    for(int i = 1; i <= abs(l-m); i++){
+        smaller.push_back(0);
+    }
+    
+    assert(smaller.size() == n);
+    std::vector<int> result;
+    for(int row = 0; row < n; row++){
+        int sum = 0;
+        for(int col = 0; col < n; col++){
+           sum += matrix[row][col] * smaller[col]; 
+        }
+        result.push_back(sum);
+    }
+
+    Signal convoluted(new_origin_index, result);
+    return convoluted;
+}

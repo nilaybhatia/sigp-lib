@@ -33,6 +33,7 @@ class Signal{
         friend std::ostream& operator<< (std::ostream& os, const Signal& sig);
 
         Signal linear_convolution(const Signal& other);
+        Signal circular_convolution(const Signal& other);
 };
 
 #endif
