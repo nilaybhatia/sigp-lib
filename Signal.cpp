@@ -114,7 +114,6 @@ Signal operator+ (const Signal& sig1, const Signal& sig2){
     return Signal(new_orgin_index, std::vector<int>(new_vals.begin(), new_vals.end()));
 }
 
-
 std::ostream& operator<< (std::ostream& os, const Signal& seq){
     os << "The signal is \n";
     for(int ele : seq.vals) os << ele << " "; os << "\t";
@@ -122,18 +121,25 @@ std::ostream& operator<< (std::ostream& os, const Signal& seq){
     return os;
 }
 
-
-Signal Signal::linear_convolution(const Signal& other){
-    int new_origin_index = this->origin_index + other.origin_index;
-    int n = this->vals.size(), m = other.vals.size();
+std::vector<std::vector<int>> Signal::get_matrix(const std::vector<int>& v1, const std::vector<int>& v2){
+    int n = v1.size(), m = v2.size();
 
     // n x m matrix
     std::vector<std::vector<int>> matrix(n, std::vector<int>(m));
     for(int i = 0; i < n; i++){
         for(int j = 0; j < m; j++){
-            matrix[i][j] = this->vals[i] * other.vals[j];
+            matrix[i][j] = v1[i] * v2[j];
         }
     }
+    return matrix;
+}
+
+Signal Signal::linear_convolution(const Signal& other){
+    int new_origin_index = this->origin_index + other.origin_index;
+    int n = this->vals.size(), m = other.vals.size();
+
+    std::vector<std::vector<int>> matrix = get_matrix(this->vals, other.vals);
+
 
     std::vector<int> result;
     for(int i = 0; i < n; i++){
@@ -191,4 +197,70 @@ Signal Signal::circular_convolution(const Signal& other){
 
     Signal convoluted(new_origin_index, result);
     return convoluted;
+}
+
+Signal Signal::auto_correlate(){
+    int n = this->vals.size();
+    std::vector<std::vector<int>> matrix = get_matrix(this->vals, this->vals);
+    
+    std::vector<int> result;
+    for(int i = n-1; i >= 0; i--){
+        int sum = 0;
+        for(int row = i, col = 0; row < n; row++, col++){
+            sum += matrix[row][col];
+        }
+        result.push_back(sum);
+    }
+    for(int j = 1; j < n; j++){
+        int sum = 0;
+        for(int row = 0, col = j; col < n; row++, col++){
+            sum += matrix[row][col];
+        }
+        result.push_back(sum);
+    }
+    int new_origin_index = result.size() / 2;
+    Signal correlated(new_origin_index, result);
+    return correlated;
+}
+
+Signal Signal::cross_correlate(const Signal& other){
+    int l = this->vals.size(), m = other.vals.size();
+    int n = std::max(l, m);
+
+    std::vector<int> larger, smaller;
+    if(l >= m){
+        larger.assign(this->vals.begin(), this->vals.end());
+        smaller.assign(other.vals.begin(), other.vals.end());
+    }
+    else{
+        smaller.assign(this->vals.begin(), this->vals.end());
+        larger.assign(other.vals.begin(), other.vals.end());
+    }
+    for(int i = 1; i <= abs(l-m); i++){
+        smaller.push_back(0);
+    }
+    
+    assert(smaller.size() == n);
+    // n x n matrix
+    // TODO: Since cross correlation is not commutative, order is important
+    // Rn, smaller signal must be the 2nd one
+    std::vector<std::vector<int>> matrix = get_matrix(smaller, larger);
+    std::vector<int> result;
+    for(int i = n-1; i >= 0; i--){
+        int sum = 0;
+        for(int row = i, col = 0; row < n; row++, col++){
+            sum += matrix[row][col];
+        }
+        result.push_back(sum);
+    }
+    for(int j = 1; j < n; j++){
+        int sum = 0;
+        for(int row = 0, col = j; col < n; row++, col++){
+            sum += matrix[row][col];
+        }
+        result.push_back(sum);
+    }
+    int new_origin_index = result.size() / 2;
+    Signal correlated(new_origin_index, result);
+    return correlated;
 }
