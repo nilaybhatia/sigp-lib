@@ -6,7 +6,7 @@
 using namespace std;
 
 int main() {
-    cout << "Auto correlation\n";
+    cout << "Auto correlation:\n";
     Signal x(0, {1, 2, 1, 2});
     cout << x.auto_correlate();
     Signal s(1, {1, 2, 1, 2});
@@ -14,8 +14,8 @@ int main() {
     // Conclusion: Shifting a signal does not affect
     // the auto-correlation
 
-    cout << "Cross correlation\n";
-    cout << "Larger signal must be followed by smaller signal";
+    cout << "Cross correlation:\n";
+    cout << "Larger signal must be followed by smaller signal\n";
     Signal x1(0, {1, 2, 3, 4});
     Signal x2(0, {5, 0, 6});
     cout << x1.cross_correlate(x2);

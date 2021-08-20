@@ -130,6 +130,7 @@ std::ostream& operator<<(std::ostream& os, const Signal& seq) {
 
 std::vector<std::vector<int>> Signal::get_matrix(const std::vector<int>& v1,
                                                  const std::vector<int>& v2) {
+    // v1 vertical and v2 horizontal
     int n = v1.size(), m = v2.size();
 
     // n x m matrix
@@ -205,10 +206,9 @@ Signal Signal::circular_convolution(const Signal& other) {
     return convoluted;
 }
 
-Signal Signal::auto_correlate() {
-    int n = this->vals.size();
-    std::vector<std::vector<int>> matrix = get_matrix(this->vals, this->vals);
-
+std::vector<int> Signal::get_correlation_vals(
+    const std::vector<std::vector<int>>& matrix) {
+    int n = matrix.size();
     std::vector<int> result;
     for (int i = n - 1; i >= 0; i--) {
         int sum = 0;
@@ -224,8 +224,14 @@ Signal Signal::auto_correlate() {
         }
         result.push_back(sum);
     }
-    int new_origin_index = result.size() / 2;
-    Signal correlated(new_origin_index, result);
+    return result;
+}
+Signal Signal::auto_correlate() {
+    int n = this->vals.size();
+    std::vector<std::vector<int>> matrix = get_matrix(this->vals, this->vals);
+    std::vector<int> vals = get_correlation_vals(matrix);
+    int new_origin_index = vals.size() / 2;
+    Signal correlated(new_origin_index, vals);
     return correlated;
 }
 
@@ -250,21 +256,7 @@ Signal Signal::cross_correlate(const Signal& other) {
     // TODO: Since cross correlation is not commutative, order is important
     // Rn, smaller signal must be the 2nd one
     std::vector<std::vector<int>> matrix = get_matrix(smaller, larger);
-    std::vector<int> result;
-    for (int i = n - 1; i >= 0; i--) {
-        int sum = 0;
-        for (int row = i, col = 0; row < n; row++, col++) {
-            sum += matrix[row][col];
-        }
-        result.push_back(sum);
-    }
-    for (int j = 1; j < n; j++) {
-        int sum = 0;
-        for (int row = 0, col = j; col < n; row++, col++) {
-            sum += matrix[row][col];
-        }
-        result.push_back(sum);
-    }
+    std::vector<int> result = get_correlation_vals(matrix);
     int new_origin_index = result.size() / 2;
     Signal correlated(new_origin_index, result);
     return correlated;

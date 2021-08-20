@@ -19,6 +19,8 @@ private:
     std::vector<int> vals;
     std::vector<std::vector<int>> get_matrix(const std::vector<int>& v1,
                                              const std::vector<int>& v2);
+    std::vector<int> get_correlation_vals(
+        const std::vector<std::vector<int>>& matrix);
 
 public:
     Signal();
