@@ -1,10 +1,11 @@
 #include <iostream>
 #include <vector>
+
 #include "Signal.hpp"
 
 using namespace std;
 
-int main(){
+int main() {
     cout << "Auto correlation\n";
     Signal x(0, {1, 2, 1, 2});
     cout << x.auto_correlate();
@@ -20,10 +21,10 @@ int main(){
     cout << x1.cross_correlate(x2);
 
     Signal s1(0, {1, 2, 1, 2});
-    Signal s2(0, {0, 1, 2, 1, 2}); // above signal right-shifted by 1
+    Signal s2(0, {0, 1, 2, 1, 2});  // above signal right-shifted by 1
     cout << s2.cross_correlate(s1);
     // Conclusion: When shifting a signal towards right by k units,
-    // and then taking cross-correaltion, the origin shifts by k units towards left
-    // from the auto-correlated signal
+    // and then taking cross-correlation, the origin shifts by k units towards
+    // left from the auto-correlated signal
     return 0;
 }

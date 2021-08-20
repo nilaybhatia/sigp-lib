@@ -10,15 +10,16 @@ References:
 #ifndef SIGNAL_HPP
 #define SIGNAL_HPP
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
-
-class Signal{
+class Signal {
 private:
     int origin_index;
     std::vector<int> vals;
-    std::vector<std::vector<int>> get_matrix(const std::vector<int>& v1, const std::vector<int>& v2);
+    std::vector<std::vector<int>> get_matrix(const std::vector<int>& v1,
+                                             const std::vector<int>& v2);
+
 public:
     Signal();
     Signal(int origin_index, const std::vector<int>& vals);
@@ -30,10 +31,10 @@ public:
     Signal multiply_scalar(int scalar);
     // overloading *, +, and cout operators
     // int Signal::operator[] (int index);
-    friend Signal operator* (const Signal& sig1, const Signal& sig2);
-    friend Signal operator+ (const Signal& sig1, const Signal& sig2);
-    friend std::ostream& operator<< (std::ostream& os, const Signal& sig);
-    
+    friend Signal operator*(const Signal& sig1, const Signal& sig2);
+    friend Signal operator+(const Signal& sig1, const Signal& sig2);
+    friend std::ostream& operator<<(std::ostream& os, const Signal& sig);
+
     Signal linear_convolution(const Signal& other);
     Signal circular_convolution(const Signal& other);
     Signal auto_correlate();
