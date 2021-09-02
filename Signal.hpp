@@ -10,6 +10,7 @@ References:
 #ifndef SIGNAL_HPP
 #define SIGNAL_HPP
 
+#include <complex>
 #include <iostream>
 #include <vector>
 
@@ -21,6 +22,9 @@ private:
                                              const std::vector<int>& v2);
     std::vector<int> get_correlation_vals(
         const std::vector<std::vector<int>>& matrix);
+    std::vector<std::vector<std::complex<double>>> multiply_matrices(
+        const std::vector<std::vector<std::complex<double>>>& A,
+        const std::vector<std::vector<int>>& B);
 
 public:
     Signal();
@@ -41,6 +45,8 @@ public:
     Signal circular_convolution(const Signal& other);
     Signal auto_correlate();
     Signal cross_correlate(const Signal& other);
+
+    std::vector<std::complex<double>> DFT();
 };
 
 #endif

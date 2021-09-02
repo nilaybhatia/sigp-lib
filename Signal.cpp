@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <complex>
 #include <deque>
 #include <iostream>
 #include <vector>
@@ -128,6 +129,33 @@ std::ostream& operator<<(std::ostream& os, const Signal& seq) {
     return os;
 }
 
+std::vector<std::vector<std::complex<double>>> Signal::multiply_matrices(
+    const std::vector<std::vector<std::complex<double>>>& A,
+    const std::vector<std::vector<int>>& B) {
+    if (A[0].size() != B.size()) {
+        throw std::invalid_argument("Matrices are not compatible");
+    }
+    int m = A.size();
+    int n = A[0].size();
+    int p = B[0].size();
+
+    std::vector<std::vector<std::complex<double>>> product(
+        m, std::vector<std::complex<double>>(p));
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < p; j++) {
+            for (int k = 0; k < n; k++) {
+                // std::cout << A[i][k] << " " << B[k][j] << "\n";
+                std::complex<double> a = A[i][k];
+                std::complex<double> b(B[k][j], 0);
+                // why does b as a simple int not work?
+                std::complex<double> prod(a * b);
+                product[i][j] += prod;
+            }
+        }
+    }
+    return product;
+}
+
 std::vector<std::vector<int>> Signal::get_matrix(const std::vector<int>& v1,
                                                  const std::vector<int>& v2) {
     // v1 vertical and v2 horizontal
@@ -226,6 +254,7 @@ std::vector<int> Signal::get_correlation_vals(
     }
     return result;
 }
+
 Signal Signal::auto_correlate() {
     int n = this->vals.size();
     std::vector<std::vector<int>> matrix = get_matrix(this->vals, this->vals);
@@ -260,4 +289,31 @@ Signal Signal::cross_correlate(const Signal& other) {
     int new_origin_index = result.size() / 2;
     Signal correlated(new_origin_index, result);
     return correlated;
+}
+
+std::vector<std::complex<double>> Signal::DFT() {
+    const double pi = 3.14159265358979323846;
+    int N = this->vals.size();
+    std::vector<std::vector<int>> vals_as_column_vector;
+    for (int val : this->vals) {
+        vals_as_column_vector.push_back({val});
+    }
+    std::vector<std::vector<std::complex<double>>> kernel(
+        N, std::vector<std::complex<double>>(N));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            std::complex<double> arg(0, -2 * pi * i * j / N);
+            kernel[i][j] = exp(arg);
+        }
+    }
+    /*for(int i = 0; i < N; i++){
+        for(int j = 0; j < N; j++){
+            std::cout << kernel[i][j] << " ";
+        }
+        std::cout << "\n";
+    }*/
+    auto result = multiply_matrices(kernel, vals_as_column_vector);
+    std::vector<std::complex<double>> result_vals;
+    for (int i = 0; i < N; i++) result_vals.push_back(result[i][0]);
+    return result_vals;
 }
