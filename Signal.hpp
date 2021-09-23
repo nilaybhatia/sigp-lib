@@ -18,6 +18,7 @@ class Signal {
 private:
     int origin_index;
     std::vector<int> vals;
+    // have to find a better place for these utility functions
     std::vector<std::vector<int>> get_matrix(const std::vector<int>& v1,
                                              const std::vector<int>& v2);
     std::vector<int> get_correlation_vals(
@@ -47,6 +48,21 @@ public:
     Signal cross_correlate(const Signal& other);
 
     std::vector<std::complex<double>> DFT();
+    std::vector<std::complex<double>> FFT();
+};
+
+// makeshift class for FFT until templating is achieved
+class ComplexSignal {
+private:
+    std::vector<std::complex<double>> vals;
+    unsigned int bit_reverse(unsigned int num, unsigned int max_bits);
+    // wouldn't belong here, it's more of a utility function
+    unsigned int lg(unsigned int num);
+
+public:
+    ComplexSignal(const std::vector<std::complex<double>>& vals);
+    ComplexSignal FFT();
+    friend std::ostream& operator<<(std::ostream& os, const ComplexSignal& sig);
 };
 
 #endif

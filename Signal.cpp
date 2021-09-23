@@ -317,3 +317,77 @@ std::vector<std::complex<double>> Signal::DFT() {
     for (int i = 0; i < N; i++) result_vals.push_back(result[i][0]);
     return result_vals;
 }
+
+ComplexSignal::ComplexSignal(const std::vector<std::complex<double>>& vals) {
+    this->vals = vals;
+}
+unsigned int ComplexSignal::bit_reverse(unsigned int num,
+                                        unsigned int max_bits) {
+    int ans = 0;
+    for (int i = 0; i < max_bits; i++) {
+        ans = (ans << 1);
+        ans = (ans | (num & 1));
+        num = (num >> 1);
+    }
+    return ans;
+}
+unsigned int ComplexSignal::lg(unsigned int num) {
+    unsigned int ans = 0;
+    while (num > 0) {
+        ans++;
+        num >>= 1;
+    }
+    return ans;
+}
+ComplexSignal ComplexSignal::FFT() {
+    /*Ref:
+     * https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Pseudocode*/
+    const double pi = 3.14159265358979323846;
+    int N = this->vals.size();
+    if (N == 1) {
+        return *this;
+    } else {
+        std::vector<std::complex<double>> temp;
+        // bit reversal
+
+        // max_bits = log2(N-1)
+        unsigned int max_bits = lg(N - 1);
+
+        // std::cout << "N=" << N << "max_bits=" << max_bits << "\n";
+        for (int k = 0; k < N; k++) {
+            unsigned int index = bit_reverse(k, max_bits);
+            // std::cout << k << " " << index << "\n";
+            temp.push_back(this->vals[index]);
+        }
+
+        // for(auto ele : temp) std::cout << ele << " "; std::cout << "\n";
+
+        std::vector<std::complex<double>> even_vals(temp.begin(),
+                                                    temp.begin() + N / 2);
+        std::vector<std::complex<double>> odd_vals(temp.begin() + N / 2,
+                                                   temp.end());
+        ComplexSignal even_terms(even_vals);
+        ComplexSignal odd_terms(odd_vals);
+        ComplexSignal G = even_terms.FFT();
+        ComplexSignal H = odd_terms.FFT();
+        // std::cout << "N = " << N << "\n";
+        // std::cout << "G=" << G << "H=" << H;
+        std::vector<std::complex<double>> result;
+        for (int k = 0; k < N; k++) {
+            // std::cout << k << " ";
+            std::complex<double> arg(0, -2 * pi * k / N);
+            std::complex<double> W_N_k = exp(arg);
+            result.push_back(G.vals[k % G.vals.size()] +
+                             W_N_k * H.vals[k % H.vals.size()]);
+        }
+        return ComplexSignal(result);
+    }
+}
+std::ostream& operator<<(std::ostream& os, const ComplexSignal& sig) {
+    os << "The complex signal is \n";
+    for (auto ele : sig.vals)
+        os << std::noshowpos << std::real(ele) << std::showpos << " "
+           << std::imag(ele) << "j" << std::noshowpos << "\t"
+           << "(Amplitude: " << abs(ele) << ", Phase: " << arg(ele) << ")\n";
+    return os;
+}
